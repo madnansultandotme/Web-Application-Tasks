@@ -23,20 +23,53 @@ app.get("/api/users",(req,res)=>{
     res.send(users);
 });
 //Users Route
-app.get("/api/users/:id", (req, res) => {
-    const userId = parseInt(req.params.id, 10);
-    const user = users.find(u => u.id === userId);
-    if (user) {
-        res.send(user);
+app.get("/users/:identifier", (req, res) => {
+    const identifier = req.params.identifier;
+    let user;
+    if (!isNaN(identifier)) {
+        const userId = parseInt(identifier, 10);
+        user = users.find(u => u.id === userId);
     } else {
-        res.status(404).send({ error: "User not found" });
+        const userName = identifier.toLowerCase();
+        user = users.find(u => u.first_name.toLowerCase() === userName || u.last_name.toLowerCase() === userName);
     }
-});
-app.get("/api/users/:name", (req, res) => {
-    const userName = req.params.name.toLowerCase();
-    const user = users.find(u => u.first_name.toLowerCase() === userName || u.last_name.toLowerCase() === userName);
     if (user) {
-        res.send(user);
+        const html = `
+            <style>
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                th, td {
+                    padding: 8px;
+                    text-align: left;
+                    border-bottom: 1px solid #ddd;
+                }
+                th {
+                    background-color: #f2f2f2;
+                }
+                tr:hover {
+                    background-color: #f5f5f5;
+                }
+            </style>
+            <table>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Gender</th>
+                    <th>IPAddress</th>
+                </tr>
+                <tr>
+                    <td>${user.first_name}</td>
+                    <td>${user.last_name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.gender}</td>
+                    <td>${user.ip_address}</td>
+                </tr>
+            </table>
+        `;
+        res.send(html);
     } else {
         res.status(404).send({ error: "User not found" });
     }
@@ -194,6 +227,22 @@ app.get("/api/users/class/:Class", async (req, res) => {
     } catch (err) {
         console.error('Error reading file', err);
         res.status(500).send({ error: "Internal Server Error" });
+    }
+});
+app.get("/api/users/:identifier", (req, res) => {
+    const identifier = req.params.identifier;
+    let user;
+    if (!isNaN(identifier)) {
+        const userId = parseInt(identifier, 10);
+        user = users.find(u => u.id === userId);
+    } else {
+        const userName = identifier.toLowerCase();
+        user = users.find(u => u.first_name.toLowerCase() === userName || u.last_name.toLowerCase() === userName);
+    }
+    if (user) {
+        res.send(user);
+    } else {
+        res.status(404).send({ error: "User not found" });
     }
 });
 //Route to patch the user email by id
