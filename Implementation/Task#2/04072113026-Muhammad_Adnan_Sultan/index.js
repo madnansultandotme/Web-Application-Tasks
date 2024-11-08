@@ -1,6 +1,6 @@
 const http=require('http');
 const express=require('express');
-const users=require('./MOCK_DATA.json');
+const users=require('./database.json');
 const fs = require('fs');
 const app=express();
 
@@ -31,6 +31,15 @@ app.get("/api/users/:id", (req, res) => {
         res.status(404).send({ error: "User not found" });
     }
 });
+app.get("/api/users/:name", (req, res) => {
+    const userName = req.params.name.toLowerCase();
+    const user = users.find(u => u.first_name.toLowerCase() === userName || u.last_name.toLowerCase() === userName);
+    if (user) {
+        res.send(user);
+    } else {
+        res.status(404).send({ error: "User not found" });
+    }
+});
 app.post("/api/users", (req, res) => {
     const { first_name, last_name, email, gender, ip_address } = req.body;
     const newUser = {
@@ -44,7 +53,7 @@ app.post("/api/users", (req, res) => {
     users.push(newUser);
 
     // Write the updated users array to the file
-    fs.writeFile('./MOCK_DATA.json', JSON.stringify(users, null, 2), (err) => {
+    fs.writeFile('./database.json', JSON.stringify(users, null, 2), (err) => {
         if (err) {
             console.error('Error writing to file', err);
             return res.status(500).json({ message: "Internal Server Error" });
@@ -75,49 +84,49 @@ const classCUsers = classifiedUsers.filter(user => user.ip_class === 'Class C');
 const classDUsers = classifiedUsers.filter(user => user.ip_class === 'Class D');
 const classEUsers = classifiedUsers.filter(user => user.ip_class === 'Class E');
 
-fs.writeFile('A.txt', JSON.stringify(classAUsers, null, 2), (err) => {
+fs.writeFile('A.json', JSON.stringify(classAUsers, null, 2), (err) => {
     if (err) {
-        console.error('Error writing to A.txt', err);
+        console.error('Error writing to A.json', err);
     } else {
-        console.log('A.txt written successfully');
+        console.log('A.json written successfully');
     }
 });
 
-fs.writeFile('B.txt', JSON.stringify(classBUsers, null, 2), (err) => {
+fs.writeFile('B.json', JSON.stringify(classBUsers, null, 2), (err) => {
     if (err) {
-        console.error('Error writing to B.txt', err);
+        console.error('Error writing to B.json', err);
     } else {
-        console.log('B.txt written successfully');
+        console.log('B.json written successfully');
     }
 });
 
-fs.writeFile('C.txt', JSON.stringify(classCUsers, null, 2), (err) => {
+fs.writeFile('C.json', JSON.stringify(classCUsers, null, 2), (err) => {
     if (err) {
-        console.error('Error writing to C.txt', err);
+        console.error('Error writing to C.json', err);
     } else {
-        console.log('C.txt written successfully');
+        console.log('C.json written successfully');
     }
 });
-fs.writeFile('D.txt', JSON.stringify(classDUsers, null, 2), (err) => {
+fs.writeFile('D.json', JSON.stringify(classDUsers, null, 2), (err) => {
     if (err) {
-        console.error('Error writing to D.txt', err);
+        console.error('Error writing to D.json', err);
     } else {
-        console.log('D.txt written successfully');
+        console.log('D.json written successfully');
     }
 });
 
-fs.writeFile('E.txt', JSON.stringify(classEUsers, null, 2), (err) => {
+fs.writeFile('E.json', JSON.stringify(classEUsers, null, 2), (err) => {
     if (err) {
-        console.error('Error writing to E.txt', err);
+        console.error('Error writing to E.json', err);
     } else {
-        console.log('E.txt written successfully');
+        console.log('E.json written successfully');
     }
 });
 
 res.send({ message: "IP addresses have been classified and written to files." });
 });
 //route to get ips by Ip class from .txt files amd append them in tables format
-const classFiles = ['A.txt', 'B.txt', 'C.txt', 'D.txt', 'E.txt'];
+const classFiles = ['A.json', 'B.json', 'C.json', 'D.json', 'E.json'];
 
 const readFileAsync = (file) => {
     return new Promise((resolve, reject) => {
@@ -131,9 +140,9 @@ const readFileAsync = (file) => {
     });
 };
 
-app.get("/IPAddress/:Class", async (req, res) => {
+app.get("/api/users/:Class", async (req, res) => {
     const className = req.params.Class.toUpperCase();
-    const fileName = `${className}.txt`;
+    const fileName = `${className}.json`;
 
     if (!classFiles.includes(fileName)) {
         return res.status(400).send({ error: "Invalid IP class" });
