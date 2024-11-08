@@ -229,6 +229,55 @@ app.get("/api/users/class/:Class", async (req, res) => {
         res.status(500).send({ error: "Internal Server Error" });
     }
 });
+//  update the organization of users having Class D IP addresses to 
+// QAU. 
+app.patch("/api/users/class/:class", async (req, res) => {
+    const className = req.params.class.toUpperCase();
+    if (className !== 'D') {
+        return res.status(400).send({ error: "Only Class D users can be updated" });
+    }
+
+    const updatedUsers = users.map(user => {
+        if (classifyIP(user.ip_address) === 'Class D') {
+            return { ...user, organization: 'QAU' };
+        }
+        return user;
+    });
+
+    fs.writeFile('./database.json', JSON.stringify(updatedUsers, null, 2), (err) => {
+        if (err) {
+            console.error('Error writing to file', err);
+            return res.status(500).send({ error: "Internal Server Error" });
+        }
+        res.send({ message: "Class D users updated successfully" });
+    });
+});
+
+
+
+//Route to delete the users of specific class
+app.delete("/api/users/class/:class", async (req, res) => {
+    const className = req.params.Class.toUpperCase();
+    const fileName = `${className}.json`;
+
+    if (!classFiles.includes(fileName)) {
+        return res.status(400).send({ error: "Invalid IP class" });
+    }
+
+    try {
+        const remainingUsers = users.filter(user => classifyIP(user.ip_address) !== `Class ${className}`);
+        fs.writeFile('./database.json', JSON.stringify(remainingUsers, null, 2), (err) => {
+            if (err) {
+                console.error('Error writing to file', err);
+                return res.status(500).send({ error: "Internal Server Error" });
+            }
+            res.send({ message: `Users of class ${className} deleted successfully from database.json` });
+        });
+    } catch (err) {
+        console.error('Error processing request', err);
+        res.status(500).send({ error: "Internal Server Error" });
+    }
+});
 app.get("/api/users/:identifier", (req, res) => {
     const identifier = req.params.identifier;
     let user;
