@@ -1,0 +1,2 @@
+1 | 29/10/2024, 10:44:15 am | / | 0 query parameters
+2 | 29/10/2024, 10:44:16 am | /favicon.ico | 0 query parameters
