@@ -22,6 +22,7 @@ app.get("/api/users",(req,res)=>{
 
     res.send(users);
 });
+//Users Route
 app.get("/api/users/:id", (req, res) => {
     const userId = parseInt(req.params.id, 10);
     const user = users.find(u => u.id === userId);
@@ -139,8 +140,8 @@ const readFileAsync = (file) => {
         });
     });
 };
-
-app.get("/api/users/:Class", async (req, res) => {
+// routes for Ip clases
+app.get("/api/users/class/:Class", async (req, res) => {
     const className = req.params.Class.toUpperCase();
     const fileName = `${className}.json`;
 
@@ -204,7 +205,7 @@ app.patch("/api/users/:id", (req, res) => {
         if (email) {
             users[userIndex].email = email;
 
-            fs.writeFile('./MOCK_DATA.json', JSON.stringify(users, null, 2), (err) => {
+            fs.writeFile('./database.json', JSON.stringify(users, null, 2), (err) => {
                 if (err) {
                     console.error('Error writing to file', err);
                     return res.status(500).json({ message: "Internal Server Error" });
@@ -214,6 +215,25 @@ app.patch("/api/users/:id", (req, res) => {
         } else {
             res.status(400).send({ error: "Email is required" });
         }
+    } else {
+        res.status(404).send({ error: "User not found" });
+    }
+});
+//Route to delete the user by id
+app.delete("/api/users/:id", (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    const userIndex = users.findIndex(u => u.id === userId);
+
+    if (userIndex !== -1) {
+        const deletedUser = users.splice(userIndex, 1)[0];
+
+        fs.writeFile('./database.json', JSON.stringify(users, null, 2), (err) => {
+            if (err) {
+                console.error('Error writing to file', err);
+                return res.status(500).json({ message: "Internal Server Error" });
+            }
+            res.json({ message: "User deleted successfully", user: deletedUser });
+        });
     } else {
         res.status(404).send({ error: "User not found" });
     }
