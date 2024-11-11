@@ -1,62 +1,71 @@
-const express=require('express');
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
-const prompt = require('prompt');
-const app=express();
-const port=3000;
-app.get('/',(req,res)=>{
-    res.send('Task 3');
-});
-// Create a chat room on the local network of the lab. 
-// (i) To send a message, you will use the IP address of the receiver node instead 
-// of the local host (192.168.2.1:8080?message=”your_message”) 
-// (ii) To receive a message, you will create a server on your node listening on 
-// port 8080. Use URL module to parse the request url and extract the 
-// message. 
-// (iii) Using the file system module, keep the history of the chats. 
-// Function to send a message
-// Function to send a message
 
-// Create a server to receive messages
-const server = http.createServer((req, res) => {
+const port = 8080;
+
+// Function to start the server and listen for incoming messages
+function startServer() {
+  const server = http.createServer((req, res) => {
+    // Parse the request URL to get the message parameter
     const parsedUrl = url.parse(req.url, true);
     const message = parsedUrl.query.message;
 
-    if (req.method === 'GET' && !message) {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(`
-            <html>
-                <body>
-                    <form action="/" method="get">
-                        <label for="message">Enter your message:</label>
-                        <input type="text" id="message" name="message">
-                        <button type="submit">Send</button>
-                    </form>
-                </body>
-            </html>
-        `);
-    } else if (message) {
-        const logFile = path.join(__dirname, 'chat_history.txt');
-        fs.appendFile(logFile, `Received message: ${message}\n`, err => {
-            if (err) {
-                console.error(`Error writing to log file: ${err.message}`);
-            }
-        });
+    if (message) {
+      console.log(`Received message: ${message}`);
 
-        res.writeHead(302, { 'Location': '/' });
-        res.end();
+      // Append the message to chat history file
+      fs.appendFile('chat_history.txt', `Message: ${message}\n`, (err) => {
+        if (err) {
+          console.error('Error writing to file', err);
+        }
+      });
+
+      // Send response back to the sender
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('Message received and saved.');
     } else {
-        res.writeHead(400, { 'Content-Type': 'text/plain' });
-        res.end('No message received');
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('No message provided.');
     }
-});
+  });
 
-server.listen(8080, () => {
-    console.log('Chat server listening on port 8080');
-});
-app.listen(port,()=>{
-    console.log(`Server running on port ${"http:localhost:"+port}`);
-});
+  server.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+}
+
+// Function to send a message to another node
+function sendMessage(ip, message) {
+  const options = {
+    hostname: ip,
+    port: 8080,
+    path: `/path?message=${encodeURIComponent(message)}`,
+    method: 'GET'
+  };
+
+  const req = http.request(options, (res) => {
+    let data = '';
+
+    res.on('data', (chunk) => {
+      data += chunk;
+    });
+
+    res.on('end', () => {
+      console.log(`Response from ${ip}: ${data}`);
+    });
+  });
+
+  req.on('error', (e) => {
+    console.error(`Problem with request: ${e.message}`);
+  });
+
+  req.end();
+}
+
+// Start the server
+startServer();
+
+// Example usage of sendMessage
+// Replace '192.168.2.2' with the IP address of the node you want to message
+// sendMessage('172.16.19.191', 'Hello from Node A!');
