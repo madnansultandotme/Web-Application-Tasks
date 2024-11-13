@@ -1,11 +1,8 @@
-// const fs = require('fs');
 import fs from 'fs';
-// const readline = require('readline');
 import readline from 'readline';
-// const validator = require('validator');
 import validator from 'validator';
-// const chalk = require('chalk');
 import chalk from 'chalk';
+
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -20,7 +17,7 @@ function validateIPv4(ip) {
 }
 
 function readFile(filePath) {
-    return fs.readFileSync(filePath, 'utf-8').split('\n').filter(Boolean);
+    return fs.readFileSync(filePath, 'utf-8').split(',').map(ip => ip.trim()).filter(Boolean);
 }
 
 function getNetworkAddress(ip) {
@@ -55,7 +52,7 @@ rl.question('Enter your email address: ', (email) => {
             const networkMatch = whiteList.some(whiteIp => getNetworkAddress(whiteIp) === userNetwork);
 
             if (networkMatch) {
-                console.log(chalk.orange('Warning: Your IP address belongs to a network whose IP has been authorized. Please contact the administrator.'));
+                console.log(chalk.hex('#FFA500')('Warning: Your IP address belongs to a network whose IP has been authorized. Please contact the administrator.'));
             } else {
                 fs.appendFileSync('Pending.txt', `${ip}\n`);
                 console.log(chalk.red('Error: Unable to authenticate the IP address.'));

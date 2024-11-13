@@ -4,17 +4,17 @@ const fs = require('fs');
 
 const port = 8080;
 
-// Function to start the server and listen for incoming messages
+
 function startServer() {
   const server = http.createServer((req, res) => {
-    // Parse the request URL to get the message parameter
+    
     const parsedUrl = url.parse(req.url, true);
     const message = parsedUrl.query.message;
 
     if (message) {
       console.log(`Received message: ${message}`);
 
-      // Append the message to chat history file
+ 
       fs.appendFile('chat_history.txt', `Message: ${message}\n`, (err) => {
         if (err) {
           console.error('Error writing to file', err);
