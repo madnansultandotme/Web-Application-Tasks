@@ -1,0 +1,132 @@
+
+### Part 1: Commands for Tasks
+
+1. Create a database named your_name_database:
+
+use your_name_database
+```
+
+2. Create a collection named personals_collection:
+
+db.createCollection("personals_collection")
+
+
+3. Add 5 documents to personals_collection:
+
+db.personals_collection.insertMany([
+    { reg_no: "001", name: "Ali", city: "Rawalpindi" },
+    { reg_no: "002", name: "Sara", city: "Lahore" },
+    { reg_no: "003", name: "Ahmed", city: "Karachi" },
+    { reg_no: "004", name: "Fatima", city: "Islamabad" },
+    { reg_no: "005", name: "Zain", city: "Rawalpindi" }
+])
+
+
+4. Create another collection named academics_collection:
+
+db.createCollection("academics_collection")
+
+
+5. Add 5 documents to academics_collection:
+
+db.academics_collection.insertMany([
+    { reg_no: "001", degree: "BSCS", enrollment_year: 2019, favorite_course: "AI" },
+    { reg_no: "002", degree: "BBA", enrollment_year: 2020, favorite_course: "Marketing" },
+    { reg_no: "003", degree: "BSSE", enrollment_year: 2018, favorite_course: "Data Science" },
+    { reg_no: "004", degree: "BEE", enrollment_year: 2019, favorite_course: "Electronics" },
+    { reg_no: "005", degree: "BSIT", enrollment_year: 2021, favorite_course: "Cybersecurity" }
+])
+
+
+6. Read and display all records of both collections:
+
+db.personals_collection.find().pretty()
+db.academics_collection.find().pretty()
+
+
+7. Display names of students from Rawalpindi:
+
+db.personals_collection.find({ city: "Rawalpindi" }, { name: 1, _id: 0 })
+
+
+8. Display names of students enrolled in 2019:
+
+db.academics_collection.find({ enrollment_year: 2019 }, { reg_no: 1, _id: 0 })
+
+
+9. Update city name "Rawalpindi/Islamabad" where applicable:
+
+db.personals_collection.updateMany(
+    { city: { $in: ["Rawalpindi", "Islamabad"] } },
+    { $set: { city: "Rawalpindi/Islamabad" } }
+)
+
+
+10. Delete documents of students enrolled before 2019:
+
+db.personals_collection.deleteMany({ reg_no: { $in: ["003"] } })
+db.academics_collection.deleteMany({ enrollment_year: { $lt: 2019 } })
+
+
+### Part 2: Commands for Fake Data File
+
+1. Insert JSON data into `information` collection:
+
+db.information.insertMany(require('./fake_data.json'))
+```
+
+2. Create separate collections for each IP class:
+
+db.createCollection("classA")
+db.createCollection("classB")
+db.createCollection("classC")
+db.createCollection("classD")
+db.createCollection("classE")
+
+
+3. Filter documents and insert into corresponding collections:
+
+db.information.find({ ip_address: /^10\./ }).forEach(doc => db.classA.insert(doc))
+db.information.find({ ip_address: /^172\.(1[6-9]|2[0-9]|3[0-1])\./ }).forEach(doc => db.classB.insert(doc))
+db.information.find({ ip_address: /^192\.168\./ }).forEach(doc => db.classC.insert(doc))
+// Adjust the regex patterns for class D and E based on their IP ranges
+
+
+4. Find the male-to-female ratio for each collection:
+
+function calculateRatio(collection) {
+    const males = db[collection].count({ gender: "Male" })
+    const females = db[collection].count({ gender: "Female" })
+    return `Male: ${males}, Female: ${females}`
+}
+print(calculateRatio("classA"))
+print(calculateRatio("classB"))
+print(calculateRatio("classC"))
+print(calculateRatio("classD"))
+print(calculateRatio("classE"))
+print(calculateRatio("information"))
+
+
+5. Delete documents with prime IDs from all collections:
+
+function isPrime(num) {
+    if (num < 2) return false
+    for (let i = 2; i <= Math.sqrt(num); i++) {
+        if (num % i === 0) return false
+    }
+    return true
+}
+
+db.information.find().forEach(doc => {
+    if (isPrime(doc.id)) db.information.deleteOne({ _id: doc._id })
+})
+
+
+6. Update documents where email ends with `.gov` to set Organization to “QAU”:
+
+db.information.updateMany(
+    { email: { $regex: /\.gov$/ } },
+    { $set: { organization: "QAU" } }
+)
+
+
